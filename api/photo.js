@@ -29,8 +29,8 @@ const signedForm = (params) => {
 };
 
 const passwordOk = (req) => {
-  const given = Buffer.from(String(req.headers["x-upload-password"] || ""));
-  const expected = Buffer.from(UPLOAD_PASSWORD || "");
+  const given = Buffer.from(String(req.headers["x-upload-password"] || "").trim());
+  const expected = Buffer.from((UPLOAD_PASSWORD || "").trim());
   return expected.length > 0 && given.length === expected.length && crypto.timingSafeEqual(given, expected);
 };
 
@@ -90,6 +90,9 @@ module.exports = async (req, res) => {
     if (req.method === "GET") return await getPhoto(res);
 
     if (req.method === "POST" || req.method === "DELETE") {
+      if (!(UPLOAD_PASSWORD || "").trim()) {
+        return res.status(500).json({ error: "UPLOAD_PASSWORD is not set in Vercel (redeploy after adding it)." });
+      }
       if (!passwordOk(req)) return res.status(401).json({ error: "Wrong password." });
       return req.method === "POST" ? await uploadPhoto(req, res) : await deletePhoto(res);
     }
