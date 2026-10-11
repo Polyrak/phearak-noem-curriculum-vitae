@@ -156,6 +156,20 @@ body.light .site-header {
   padding: 100px 0;
 }
 
+/* Same space under the header on every page. */
+main > .section:first-child {
+  padding-top: 32px;
+}
+
+/* Keep the gap between stacked sections (e.g. Experience -> Education) small. */
+.section:has(+ .section) {
+  padding-bottom: 32px;
+}
+
+.section + .section {
+  padding-top: 32px;
+}
+
 .hero {
   min-height: 100%;
   display: flex;
@@ -166,7 +180,7 @@ body.light .site-header {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   gap: 56px;
-  align-items: center;
+  align-items: start;
 }
 
 .eyebrow {
@@ -617,10 +631,6 @@ code {
   .split,
   .timeline-item {
     grid-template-columns: 1fr;
-  }
-
-  .hero {
-    padding-top: 48px;
   }
 
   .hero-card {
