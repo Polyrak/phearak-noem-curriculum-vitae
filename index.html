@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phearak Noem | Software Developer</title>
-  <meta name="description" content="Personal portfolio of Phearak Noem, Software Developer building practical business systems with modern web technologies." />
+  <title>Phearak Noem | Software Engineer</title>
+  <meta name="description" content="Personal portfolio of Phearak Noem, Software Engineer building practical business systems with modern web technologies." />
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
@@ -20,11 +20,11 @@
 
       <ul class="nav-links" id="navLinks">
         <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="about.html">About</a></li>
         <li><a href="skills.html">Skills</a></li>
         <li><a href="projects.html">Projects</a></li>
         <li><a href="experience.html">Experience</a></li>
         <li><a href="contact.html">Contact</a></li>
+        <li><a href="about.html">About</a></li>
         <li><button class="theme-toggle" id="themeToggle" type="button">🌙</button></li>
       </ul>
     </nav>
@@ -34,7 +34,7 @@
     <section id="home" class="hero section">
       <div class="container hero-grid">
         <div class="hero-content reveal">
-          <p class="eyebrow">Senior Software Developer</p>
+          <p class="eyebrow">Senior Full-stack software engineer</p>
           <h1>Hi, I’m <span>Phearak Noem</span></h1>
           <p class="hero-text">
             Building practical business systems with modern web technologies.
@@ -57,6 +57,10 @@
               <small>Business System Focus</small>
             </div>
             <div>
+              <strong>POS</strong>
+              <small>Dashboard Admin System</small>
+            </div>
+            <div>
               <strong>ERP</strong>
               <small>Odoo & Business Apps</small>
             </div>
@@ -64,8 +68,16 @@
         </div>
 
         <div class="hero-card reveal">
-          <div class="profile-orb">
-            <span>JA</span>
+          <div class="profile-orb" id="profileOrb">
+            <img id="profilePhoto" alt="Phearak Noem" />
+            <span>PN</span>
+            <div class="photo-controls" id="photoControls" hidden>
+              <label class="photo-btn" title="Upload photo">
+                📷
+                <input type="file" id="photoInput" accept="image/png, image/jpeg, image/webp" hidden />
+              </label>
+              <button type="button" class="photo-btn" id="photoReset" title="Remove uploaded photo" hidden>✕</button>
+            </div>
           </div>
           <h2>Full-Stack Mindset</h2>
           <p>
@@ -78,22 +90,27 @@
                 <span>HTML</span>
                 <span>CSS</span>
                 <span>JavaScript</span>
-                <span>Bootstrap 4</span>
+                <span>Bootstrap</span>
+                <span>Vite</span>
                 <span>Materialize</span>
                 <span>jQuery</span>
                 <span>JSON</span>
                 <span>AJAX</span>
                 <span>VueJS</span>
                 <span>Vuetify</span>
+                <span>Pinia for state management</span>
+                <span>Flutter</span>
+                <span>Dart</span>
               </div>
             </div>
 
             <div class="tech-group">
               <span class="tech-group-label">Backend</span>
               <div class="tech-stack">
-                <span>Nodejs</span>
-                <span>Python</span>
-                <span>Odoo</span>
+                <span>Express (Node.js) framework</span>
+                <span>Java</span>
+                <span>NestJS</span>
+                <span>PHP, Laravel</span>
                 <span>J2SE (Basic Java and OOP concepts)</span>
                 <span>J2EE (Servlet and MVC pattern)</span>
                 <span>Spring Boot</span>
@@ -101,15 +118,31 @@
                 <span>Spring RESTful Web Service</span>
                 <span>Spring Security</span>
                 <span>Thymeleaf Template Engine</span>
+                <span>Fastify</span>
+                <span>Python</span>
+                <span>.NET</span>
+                <span>TypeScript</span>
+                <span>Odoo (Custom by Python)</span>
               </div>
             </div>
 
             <div class="tech-group">
               <span class="tech-group-label">Database</span>
               <div class="tech-stack">
+                <span>Prisma</span>
                 <span>PostgreSQL</span>
                 <span>MYSQL</span>
                 <span>MariaDB</span>
+              </div>
+            </div>
+
+            <div class="tech-group">
+              <span class="tech-group-label">Testing</span>
+              <div class="tech-stack">
+                <span>Functional Test Cases</span>
+                <span>Role-Permission Testing</span>
+                <span>User Stories</span>
+                <span>Acceptance Criteria</span>
               </div>
             </div>
 

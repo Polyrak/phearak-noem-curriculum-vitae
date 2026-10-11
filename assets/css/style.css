@@ -41,6 +41,23 @@ body {
   color: var(--text);
   line-height: 1.7;
   transition: background 0.3s ease, color 0.3s ease;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.site-header,
+.footer {
+  flex-shrink: 0;
 }
 
 a {
@@ -140,7 +157,7 @@ body.light .site-header {
 }
 
 .hero {
-  min-height: calc(100vh - 76px);
+  min-height: 100%;
   display: flex;
   align-items: center;
 }
@@ -307,6 +324,63 @@ h3 {
   font-weight: 900;
 }
 
+.profile-orb {
+  position: relative;
+}
+
+.profile-orb.editable {
+  cursor: pointer;
+}
+
+.profile-orb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: none;
+}
+
+.profile-orb.has-photo img {
+  display: block;
+}
+
+.profile-orb.has-photo span {
+  display: none;
+}
+
+.photo-controls {
+  position: absolute;
+  right: 0;
+  bottom: 6px;
+  display: flex;
+  gap: 6px;
+}
+
+.photo-controls[hidden],
+.photo-btn[hidden] {
+  display: none;
+}
+
+.photo-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: var(--primary);
+  color: white;
+  font-size: 1rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+}
+
+.photo-btn:hover {
+  transform: scale(1.08);
+}
+
 .hero-card p,
 .skill-card p,
 .project-card p,
@@ -446,6 +520,43 @@ h3 {
   margin: 0 auto;
 }
 
+.contact-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.contact-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 16px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.contact-link:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+}
+
+.contact-link svg {
+  width: 30px;
+  height: 30px;
+  fill: var(--primary);
+}
+
+.contact-link span {
+  color: var(--muted);
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
 .small-note {
   font-size: 0.9rem;
   margin-top: 22px !important;
@@ -538,5 +649,9 @@ code {
 
   .contact-card {
     padding: 32px 20px;
+  }
+
+  .contact-links {
+    grid-template-columns: 1fr;
   }
 }
