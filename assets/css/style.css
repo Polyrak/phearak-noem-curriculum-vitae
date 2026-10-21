@@ -94,9 +94,16 @@ a {
   background: #15803d;
 }
 
-/* Header and footer are dark green in both themes, so their text uses light colors. */
+/* Header, footer and cards are transparent dark green in both themes, so their text uses light colors. */
 .site-header,
-.footer {
+.footer,
+.hero-meta div,
+.hero-card,
+.skill-card,
+.project-card,
+.contact-card,
+.timeline-item,
+.cert-card {
   --text: #f0fdf4;
   --muted: rgba(240, 253, 244, 0.78);
   --border: rgba(240, 253, 244, 0.18);
@@ -105,9 +112,22 @@ a {
   --bg-soft: #166534;
   color: var(--text);
   /* Frosted glass: see-through dark green with the background blurred behind it. */
-  background: rgba(20, 83, 45, 0.8);
+  background: rgba(20, 83, 45, 0.55);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* On the light page a little more green is needed to keep the light text readable. */
+body.light .site-header,
+body.light .footer,
+body.light .hero-meta div,
+body.light .hero-card,
+body.light .skill-card,
+body.light .project-card,
+body.light .contact-card,
+body.light .timeline-item,
+body.light .cert-card {
+  background: rgba(20, 83, 45, 0.72);
 }
 
 .site-header {
@@ -311,10 +331,8 @@ h3 {
 .project-card,
 .contact-card,
 .timeline-item {
-  background: var(--card);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(18px);
 }
 
 .hero-meta div {
@@ -643,7 +661,6 @@ h3 {
   position: relative;
   padding: 14px;
   border-radius: 22px;
-  background: var(--card);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   transition: transform 0.2s ease, border-color 0.2s ease;
@@ -790,13 +807,13 @@ h3 {
 
 .contact-link:hover {
   transform: translateY(-3px);
-  border-color: var(--primary);
+  border-color: var(--primary-2);
 }
 
 .contact-link svg {
   width: 30px;
   height: 30px;
-  fill: var(--primary);
+  fill: var(--primary-2);
 }
 
 .contact-link span {
