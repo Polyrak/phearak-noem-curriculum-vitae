@@ -1,6 +1,7 @@
-// Vercel serverless function: stores editable site text (e.g. the job title) as a JSON file on Cloudinary.
-//   GET  /api/settings  -> { title } (title is null until it has been saved once)
-//   POST /api/settings  -> save { title: "..." }, needs x-upload-password header
+// Vercel serverless function: stores editable site settings as a JSON file on Cloudinary.
+//   GET  /api/settings  -> { title, showCertificates }
+//                          (title is null until saved once; showCertificates is false until turned on)
+//   POST /api/settings  -> save any of { title: "...", showCertificates: true/false }, needs x-upload-password header
 
 const { apiBase, adminHeaders, signedForm, route } = require("./_cloudinary");
 
@@ -19,19 +20,41 @@ async function readSettings() {
   return file.json();
 }
 
+const publicSettings = (settings) => ({
+  title: settings.title || null,
+  showCertificates: settings.showCertificates === true,
+});
+
 async function getSettings(req, res) {
   const settings = await readSettings();
   res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
-  return res.status(200).json({ title: settings.title || null });
+  return res.status(200).json(publicSettings(settings));
 }
 
 async function saveSettings(req, res) {
-  const title = typeof req.body?.title === "string" ? req.body.title.replace(/\s+/g, " ").trim() : "";
-  if (!title || title.length > MAX_TITLE_LENGTH) {
-    return res.status(400).json({ error: `Title must be 1-${MAX_TITLE_LENGTH} characters.` });
+  const body = req.body || {};
+  const changes = {};
+
+  if (body.title !== undefined) {
+    const title = typeof body.title === "string" ? body.title.replace(/\s+/g, " ").trim() : "";
+    if (!title || title.length > MAX_TITLE_LENGTH) {
+      return res.status(400).json({ error: `Title must be 1-${MAX_TITLE_LENGTH} characters.` });
+    }
+    changes.title = title;
   }
 
-  const settings = { ...(await readSettings()), title };
+  if (body.showCertificates !== undefined) {
+    if (typeof body.showCertificates !== "boolean") {
+      return res.status(400).json({ error: "showCertificates must be true or false." });
+    }
+    changes.showCertificates = body.showCertificates;
+  }
+
+  if (!Object.keys(changes).length) {
+    return res.status(400).json({ error: "Nothing to save." });
+  }
+
+  const settings = { ...(await readSettings()), ...changes };
   const file = `data:application/json;base64,${Buffer.from(JSON.stringify(settings)).toString("base64")}`;
 
   const response = await fetch(`${apiBase()}/raw/upload`, {
@@ -43,7 +66,7 @@ async function saveSettings(req, res) {
   const data = await response.json();
   if (!response.ok) return res.status(502).json({ error: data.error?.message || "Save failed." });
 
-  return res.status(200).json({ title });
+  return res.status(200).json(publicSettings(settings));
 }
 
 module.exports = route({ GET: getSettings, POST: saveSettings });

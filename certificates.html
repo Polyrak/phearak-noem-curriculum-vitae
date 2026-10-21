@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Certificates | Phearak Noem</title>
+  <meta name="description" content="Certificates earned by Phearak Noem, Software Engineer." />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar container">
+      <a href="index.html" class="logo">Phearak<span> Noem</span></a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="experience.html">Experience</a></li>
+        <li id="certNavItem" hidden><a href="certificates.html" class="active">Certificates</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><button class="theme-toggle" id="themeToggle" type="button">🌙</button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section id="certificates" class="section">
+      <div class="container">
+        <div class="section-heading center reveal">
+          <p class="eyebrow">Certificates</p>
+          <h2>Courses and achievements</h2>
+        </div>
+
+        <!-- Owner-only: shown in edit mode (?edit). -->
+        <label class="cert-visibility" id="certVisibility" hidden>
+          <input type="checkbox" id="certVisibilityToggle" />
+          <span class="switch" aria-hidden="true"></span>
+          <span id="certVisibilityText">Certificates menu is hidden from visitors</span>
+        </label>
+
+        <form class="cert-upload" id="certUpload" hidden>
+          <input type="text" id="certTitle" maxlength="120" placeholder="Certificate name (optional)" aria-label="Certificate name" />
+          <label class="btn btn-outline cert-file">
+            <span id="certFileName">Choose image</span>
+            <input type="file" id="certFile" accept="image/png, image/jpeg, image/webp" hidden />
+          </label>
+          <button type="submit" class="btn btn-primary" id="certSubmit">Upload</button>
+        </form>
+
+        <div class="cert-grid" id="certGrid"></div>
+        <p class="cert-empty" id="certEmpty" hidden>No certificates yet.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p>© <span id="year"></span> Phearak Noem. All rights reserved.</p>
+      <a href="#">Back to top ↑</a>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

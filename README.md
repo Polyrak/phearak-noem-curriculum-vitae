@@ -84,6 +84,28 @@ The new title replaces every element marked `data-field="title"`: the home page 
 and the "I am a ..." sentence on the About page. To show the title somewhere else, add `data-field="title"` to that element.
 The title is saved on Cloudinary as `portfolio/settings.json` by `api/settings.js`.
 
+### Certificates
+
+The **Certificates** page (`certificates.html`) shows certificate images stored on Cloudinary under `portfolio/certificates/`.
+Visitors can only view them. Clicking a certificate opens the full image.
+
+The **Certificates menu is hidden by default.** When it is on, the menu shows on every page; when it is off, it is hidden
+everywhere (also in edit mode).
+
+To turn it on or off, open `https://your-site.vercel.app/certificates.html?edit` directly (type the address, since the menu
+link may be hidden) and use the switch at the top of the page.
+The setting is saved in `portfolio/settings.json` (with the job title) and may take up to a minute to reach visitors.
+
+To add or remove certificates:
+
+1. Open `https://your-site.vercel.app/certificates.html?edit`. You can also open `/edit` and click **Certificates** in the menu, since edit mode stays on when you move between pages.
+2. Type the certificate name (optional), click **Choose image**, pick a PNG, JPG or WebP file, and click **Upload**.
+3. To delete one, click the ✕ on its card.
+
+Images are shrunk to at most 1600px on the longest side before upload. The whole certificate is kept, not cropped.
+New certificates appear first. After a change, other visitors may need up to a minute to see it.
+The server side is `api/certificates.js`.
+
 ### Testing locally
 
 Opening `index.html` directly in the browser cannot upload, because `/api/photo` only exists on Vercel.

@@ -48,6 +48,49 @@ if (yearsExperience) {
 const isEditMode = location.pathname.replace(/\/+$/, "") === "/edit" || new URLSearchParams(location.search).has("edit");
 const PASSWORD_KEY = "portfolio-upload-password";
 
+// Stay in edit mode when moving between pages.
+if (isEditMode) {
+  document.querySelectorAll('a[href$=".html"]').forEach((link) => {
+    link.href = `${link.getAttribute("href")}?edit`;
+  });
+}
+
+// Shrink an image file to a JPEG data URL so uploads stay small.
+//   square: crop to a centered square of `size` px (profile photo)
+//   otherwise: keep the whole image, longest side at most `size` px (certificates)
+const resizeImage = (file, { size, square = false }) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        if (square) {
+          const side = Math.min(img.width, img.height);
+          canvas.width = size;
+          canvas.height = size;
+          context.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+        } else {
+          const scale = Math.min(1, size / Math.max(img.width, img.height));
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          // White background so transparent PNGs don't turn black as JPEG.
+          context.fillStyle = "#fff";
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(img, 0, 0, canvas.width, canvas.height);
+        }
+
+        resolve(canvas.toDataURL("image/jpeg", square ? 0.85 : 0.9));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
 // Only the owner knows the upload password; keep it for this tab so it is asked once.
 const getPassword = () => {
   try {
@@ -85,12 +128,25 @@ const sendToServer = async (url, method, body) => {
   return data;
 };
 
+// Site settings (job title, Certificates menu), loaded once and shared by every page.
+const SETTINGS_API = "/api/settings";
+const settingsLoaded = fetch(SETTINGS_API)
+  .then((response) => (response.ok ? response.json() : {}))
+  .catch(() => ({}));
+
+// Certificates menu: shown on every page only when turned on (switch on certificates.html?edit).
+const certNavItem = document.getElementById("certNavItem");
+
+const showCertificatesMenu = (visible) => {
+  if (certNavItem) certNavItem.hidden = !visible;
+};
+
+settingsLoaded.then((settings) => showCertificatesMenu(settings.showCertificates === true));
+
 // Job title: every element with data-field="title" shows the same saved text.
 const titleFields = document.querySelectorAll('[data-field="title"]');
 
 if (titleFields.length) {
-  const SETTINGS_API = "/api/settings";
-
   const showTitle = (title) => {
     titleFields.forEach((field) => {
       field.textContent = (field.dataset.prefix || "") + title;
@@ -100,12 +156,9 @@ if (titleFields.length) {
   // Once the owner starts editing, a late (or cached) server response must not overwrite their text.
   let titleTouched = false;
 
-  fetch(SETTINGS_API)
-    .then((response) => (response.ok ? response.json() : {}))
-    .then((data) => {
-      if (data.title && !titleTouched) showTitle(data.title);
-    })
-    .catch(() => {});
+  settingsLoaded.then((settings) => {
+    if (settings.title && !titleTouched) showTitle(settings.title);
+  });
 
   if (isEditMode) {
     // The <title> tag can't be edited on the page; it just follows the visible fields.
@@ -191,29 +244,6 @@ if (profileOrb) {
     photoInput.click();
   });
 
-  // Crop to a centered square and shrink to keep the upload small.
-  const resizeImage = (file, size = 600) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = reject;
-      reader.onload = () => {
-        const img = new Image();
-        img.onerror = reject;
-        img.onload = () => {
-          const side = Math.min(img.width, img.height);
-          const canvas = document.createElement("canvas");
-          canvas.width = size;
-          canvas.height = size;
-          canvas
-            .getContext("2d")
-            .drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
-          resolve(canvas.toDataURL("image/jpeg", 0.85));
-        };
-        img.src = reader.result;
-      };
-      reader.readAsDataURL(file);
-    });
-
   photoInput.addEventListener("change", async () => {
     const file = photoInput.files[0];
     photoInput.value = "";
@@ -226,7 +256,7 @@ if (profileOrb) {
 
     let dataUrl;
     try {
-      dataUrl = await resizeImage(file);
+      dataUrl = await resizeImage(file, { size: 600, square: true });
     } catch {
       alert("Could not read that image. Please try another file.");
       return;
@@ -249,6 +279,158 @@ if (profileOrb) {
       alert(`Remove failed: ${error.message}`);
     }
   });
+}
+
+// Certificates gallery: everyone can view; edit mode can upload and delete.
+const certGrid = document.getElementById("certGrid");
+
+if (certGrid) {
+  const CERT_API = "/api/certificates";
+  const certEmpty = document.getElementById("certEmpty");
+  const certUpload = document.getElementById("certUpload");
+  const certTitle = document.getElementById("certTitle");
+  const certFile = document.getElementById("certFile");
+  const certFileName = document.getElementById("certFileName");
+  const certSubmit = document.getElementById("certSubmit");
+
+  const updateEmpty = () => {
+    certEmpty.hidden = certGrid.children.length > 0;
+  };
+
+  const createCard = (certificate) => {
+    const card = document.createElement("article");
+    card.className = "cert-card";
+
+    const link = document.createElement("a");
+    link.href = certificate.url;
+    link.target = "_blank";
+    link.rel = "noopener";
+
+    const image = document.createElement("img");
+    image.src = certificate.url;
+    image.alt = certificate.title || "Certificate";
+    image.loading = "lazy";
+    link.append(image);
+    card.append(link);
+
+    if (certificate.title) {
+      const title = document.createElement("h3");
+      title.textContent = certificate.title;
+      card.append(title);
+    }
+
+    if (isEditMode) {
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "photo-btn cert-delete";
+      remove.title = "Delete certificate";
+      remove.textContent = "✕";
+      remove.addEventListener("click", async () => {
+        if (!confirm(`Delete "${certificate.title || "this certificate"}" for everyone?`)) return;
+        try {
+          const data = await sendToServer(CERT_API, "DELETE", { id: certificate.id });
+          if (data) {
+            card.remove();
+            updateEmpty();
+          }
+        } catch (error) {
+          alert(`Delete failed: ${error.message}`);
+        }
+      });
+      card.append(remove);
+    }
+
+    return card;
+  };
+
+  fetch(CERT_API)
+    .then((response) => (response.ok ? response.json() : { certificates: [] }))
+    .catch(() => ({ certificates: [] }))
+    .then((data) => {
+      certGrid.replaceChildren(...data.certificates.map(createCard));
+      updateEmpty();
+    });
+
+  if (isEditMode) {
+    certUpload.hidden = false;
+
+    // Switch that shows or hides the Certificates menu for visitors.
+    const certVisibility = document.getElementById("certVisibility");
+    const certVisibilityToggle = document.getElementById("certVisibilityToggle");
+    const certVisibilityText = document.getElementById("certVisibilityText");
+
+    const showVisibility = (visible) => {
+      certVisibilityToggle.checked = visible;
+      certVisibilityText.textContent = visible
+        ? "Certificates menu is visible to visitors"
+        : "Certificates menu is hidden from visitors";
+      showCertificatesMenu(visible);
+    };
+
+    certVisibility.hidden = false;
+    certVisibilityToggle.disabled = true;
+    settingsLoaded.then((settings) => {
+      showVisibility(settings.showCertificates === true);
+      certVisibilityToggle.disabled = false;
+    });
+
+    certVisibilityToggle.addEventListener("change", async () => {
+      const visible = certVisibilityToggle.checked;
+      certVisibilityToggle.disabled = true;
+      try {
+        const data = await sendToServer(SETTINGS_API, "POST", { showCertificates: visible });
+        showVisibility(data ? data.showCertificates : !visible);
+      } catch (error) {
+        showVisibility(!visible);
+        alert(`Save failed: ${error.message}`);
+      } finally {
+        certVisibilityToggle.disabled = false;
+      }
+    });
+
+    certFile.addEventListener("change", () => {
+      certFileName.textContent = certFile.files[0]?.name || "Choose image";
+    });
+
+    certUpload.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const file = certFile.files[0];
+      if (!file) {
+        alert("Please choose an image first.");
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        alert("Please choose an image file.");
+        return;
+      }
+
+      let dataUrl;
+      try {
+        dataUrl = await resizeImage(file, { size: 1600 });
+      } catch {
+        alert("Could not read that image. Please try another file.");
+        return;
+      }
+
+      certSubmit.disabled = true;
+      certSubmit.textContent = "Uploading…";
+      try {
+        const data = await sendToServer(CERT_API, "POST", { image: dataUrl, title: certTitle.value });
+        if (data) {
+          certGrid.prepend(createCard(data.certificate));
+          updateEmpty();
+          certUpload.reset();
+          certFileName.textContent = "Choose image";
+        }
+      } catch (error) {
+        alert(`Upload failed: ${error.message}`);
+      } finally {
+        certSubmit.disabled = false;
+        certSubmit.textContent = "Upload";
+      }
+    });
+  }
 }
 
 const revealItems = document.querySelectorAll(".reveal");
