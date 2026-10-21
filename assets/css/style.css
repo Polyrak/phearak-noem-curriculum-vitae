@@ -346,6 +346,17 @@ h3 {
   cursor: pointer;
 }
 
+.editable-text {
+  outline: 1px dashed var(--primary-2);
+  outline-offset: 4px;
+  border-radius: 4px;
+  cursor: text;
+}
+
+.editable-text:focus {
+  outline-style: solid;
+}
+
 .profile-orb img {
   position: absolute;
   inset: 0;

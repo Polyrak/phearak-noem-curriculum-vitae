@@ -74,6 +74,16 @@ To remove the photo, open the site with `?edit` and click the ✕ button.
 
 Without `?edit`, the upload buttons are hidden and clicking the photo does nothing. The server also rejects any upload without the correct password.
 
+### Change the job title
+
+1. Open `https://your-site.vercel.app/edit` (or any page with `?edit`).
+2. Click the title "Senior Full-stack software engineer" (it has a dashed outline in edit mode) and type the new text.
+3. Press **Enter** to save (or **Esc** to cancel), then enter your `UPLOAD_PASSWORD` if asked.
+
+The new title replaces every element marked `data-field="title"`: the home page heading, the browser tab title on the home page,
+and the "I am a ..." sentence on the About page. To show the title somewhere else, add `data-field="title"` to that element.
+The title is saved on Cloudinary as `portfolio/settings.json` by `api/settings.js`.
+
 ### Testing locally
 
 Opening `index.html` directly in the browser cannot upload, because `/api/photo` only exists on Vercel.

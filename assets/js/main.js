@@ -36,12 +36,133 @@ document.querySelectorAll('.footer a[href="#"]').forEach((link) => {
   });
 });
 
+// Years of experience counts up each new year from the start year (2026 -> 9, 2027 -> 10, ...).
+const yearsExperience = document.getElementById("yearsExperience");
+
+if (yearsExperience) {
+  const startYear = Number(yearsExperience.dataset.startYear);
+  yearsExperience.textContent = new Date().getFullYear() - startYear;
+}
+
+// Owner-only editing: open the site as /edit or index.html?edit to change the photo and title.
+const isEditMode = location.pathname.replace(/\/+$/, "") === "/edit" || new URLSearchParams(location.search).has("edit");
+const PASSWORD_KEY = "portfolio-upload-password";
+
+// Only the owner knows the upload password; keep it for this tab so it is asked once.
+const getPassword = () => {
+  try {
+    const saved = sessionStorage.getItem(PASSWORD_KEY);
+    if (saved) return saved;
+  } catch {}
+  const entered = prompt("Enter upload password:");
+  if (entered) {
+    try {
+      sessionStorage.setItem(PASSWORD_KEY, entered);
+    } catch {}
+  }
+  return entered;
+};
+
+const forgetPassword = () => {
+  try {
+    sessionStorage.removeItem(PASSWORD_KEY);
+  } catch {}
+};
+
+const sendToServer = async (url, method, body) => {
+  const password = getPassword();
+  if (!password) return null;
+
+  const response = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json", "x-upload-password": password },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (response.status === 401) forgetPassword();
+  if (!response.ok) throw new Error(data.error || "Request failed.");
+  return data;
+};
+
+// Job title: every element with data-field="title" shows the same saved text.
+const titleFields = document.querySelectorAll('[data-field="title"]');
+
+if (titleFields.length) {
+  const SETTINGS_API = "/api/settings";
+
+  const showTitle = (title) => {
+    titleFields.forEach((field) => {
+      field.textContent = (field.dataset.prefix || "") + title;
+    });
+  };
+
+  // Once the owner starts editing, a late (or cached) server response must not overwrite their text.
+  let titleTouched = false;
+
+  fetch(SETTINGS_API)
+    .then((response) => (response.ok ? response.json() : {}))
+    .then((data) => {
+      if (data.title && !titleTouched) showTitle(data.title);
+    })
+    .catch(() => {});
+
+  if (isEditMode) {
+    // The <title> tag can't be edited on the page; it just follows the visible fields.
+    titleFields.forEach((field) => {
+      if (field.closest("head")) return;
+
+      field.contentEditable = "plaintext-only";
+      field.spellcheck = false;
+      field.classList.add("editable-text");
+      field.title = "Click to edit. Enter to save, Esc to cancel.";
+
+      let original = field.textContent;
+      field.addEventListener("focus", () => {
+        titleTouched = true;
+        original = field.textContent;
+      });
+
+      field.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          field.blur();
+        } else if (event.key === "Escape") {
+          field.textContent = original;
+          field.blur();
+        }
+      });
+
+      field.addEventListener("blur", async () => {
+        // Copy now: the password prompt can hand focus back and reset `original` mid-save.
+        const previous = original;
+        const title = field.textContent.replace(/\s+/g, " ").trim();
+        if (!title || title === previous) {
+          field.textContent = previous;
+          return;
+        }
+
+        try {
+          const data = await sendToServer(SETTINGS_API, "POST", { title });
+          if (data) {
+            showTitle(data.title);
+          } else {
+            field.textContent = previous;
+          }
+        } catch (error) {
+          field.textContent = previous;
+          alert(`Save failed: ${error.message}`);
+        }
+      });
+    });
+  }
+}
+
 const profileOrb = document.getElementById("profileOrb");
 
 if (profileOrb) {
   const DEFAULT_PHOTO = "assets/images/profile.jpg";
   const PHOTO_API = "/api/photo";
-  const PASSWORD_KEY = "portfolio-upload-password";
   const profilePhoto = document.getElementById("profilePhoto");
   const photoControls = document.getElementById("photoControls");
   const photoInput = document.getElementById("photoInput");
@@ -61,47 +182,8 @@ if (profileOrb) {
     .then((data) => showPhoto(data.url))
     .catch(() => showPhoto(null));
 
-  // Upload is owner-only: open the page as index.html?edit to see the controls.
-  const isEditMode = new URLSearchParams(location.search).has("edit");
   photoControls.hidden = !isEditMode;
   if (isEditMode) profileOrb.classList.add("editable");
-
-  // Only the owner knows the upload password; keep it for this tab so it is asked once.
-  const getPassword = () => {
-    try {
-      const saved = sessionStorage.getItem(PASSWORD_KEY);
-      if (saved) return saved;
-    } catch {}
-    const entered = prompt("Enter upload password:");
-    if (entered) {
-      try {
-        sessionStorage.setItem(PASSWORD_KEY, entered);
-      } catch {}
-    }
-    return entered;
-  };
-
-  const forgetPassword = () => {
-    try {
-      sessionStorage.removeItem(PASSWORD_KEY);
-    } catch {}
-  };
-
-  const sendToServer = async (method, body) => {
-    const password = getPassword();
-    if (!password) return null;
-
-    const response = await fetch(PHOTO_API, {
-      method,
-      headers: { "Content-Type": "application/json", "x-upload-password": password },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    const data = await response.json().catch(() => ({}));
-
-    if (response.status === 401) forgetPassword();
-    if (!response.ok) throw new Error(data.error || "Request failed.");
-    return data;
-  };
 
   // Clicking the circle opens the file picker (skip clicks from the buttons themselves).
   profileOrb.addEventListener("click", (event) => {
@@ -151,7 +233,7 @@ if (profileOrb) {
     }
 
     try {
-      const data = await sendToServer("POST", { image: dataUrl });
+      const data = await sendToServer(PHOTO_API, "POST", { image: dataUrl });
       if (data) showPhoto(data.url);
     } catch (error) {
       alert(`Upload failed: ${error.message}`);
@@ -161,7 +243,7 @@ if (profileOrb) {
   photoReset.addEventListener("click", async () => {
     if (!confirm("Remove the profile photo for everyone?")) return;
     try {
-      const data = await sendToServer("DELETE");
+      const data = await sendToServer(PHOTO_API, "DELETE");
       if (data) showPhoto(null);
     } catch (error) {
       alert(`Remove failed: ${error.message}`);
