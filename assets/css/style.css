@@ -488,6 +488,37 @@ h3 {
   grid-template-columns: repeat(3, 1fr);
 }
 
+/* Projects grouped by company */
+.company-group + .company-group {
+  margin-top: 56px;
+}
+
+.company-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 16px;
+  padding-bottom: 14px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+}
+
+.company-heading h3 {
+  font-size: 1.4rem;
+}
+
+.company-heading small {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.company-heading span {
+  color: var(--primary-2);
+  font-weight: 700;
+}
+
 .skill-card,
 .project-card {
   padding: 26px;
