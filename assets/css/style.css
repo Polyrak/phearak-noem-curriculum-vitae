@@ -70,17 +70,51 @@ a {
   margin: 0 auto;
 }
 
+/* Thin dark green scrollbars (page and inner scroll areas). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #166534 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #166534;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #15803d;
+}
+
+/* Header and footer are dark green in both themes, so their text uses light colors. */
+.site-header,
+.footer {
+  --text: #f0fdf4;
+  --muted: rgba(240, 253, 244, 0.78);
+  --border: rgba(240, 253, 244, 0.18);
+  --card: rgba(255, 255, 255, 0.1);
+  --primary-2: #4ade80;
+  --bg-soft: #166534;
+  color: var(--text);
+  /* Frosted glass: see-through dark green with the background blurred behind it. */
+  background: rgba(20, 83, 45, 0.8);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
 .site-header {
   position: sticky;
   top: 0;
   z-index: 50;
-  backdrop-filter: blur(18px);
-  background: rgba(7, 17, 31, 0.78);
   border-bottom: 1px solid var(--border);
-}
-
-body.light .site-header {
-  background: rgba(247, 251, 255, 0.82);
 }
 
 .navbar {
