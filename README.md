@@ -92,8 +92,8 @@ Visitors can only view them. Clicking a certificate opens the full image.
 The **Certificates menu is hidden by default.** When it is on, the menu shows on every page; when it is off, it is hidden
 everywhere (also in edit mode).
 
-To turn it on or off, open `https://your-site.vercel.app/certificates.html?edit` directly (type the address, since the menu
-link may be hidden) and use the switch at the top of the page.
+To turn it on or off, open `https://your-site.vercel.app/edit` (or any page with `?edit`). An **Edit mode** bar appears at the
+bottom of the page with a "Certificates menu" switch.
 The setting is saved in `portfolio/settings.json` (with the job title) and may take up to a minute to reach visitors.
 
 To add or remove certificates:

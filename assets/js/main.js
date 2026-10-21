@@ -143,6 +143,48 @@ const showCertificatesMenu = (visible) => {
 
 settingsLoaded.then((settings) => showCertificatesMenu(settings.showCertificates === true));
 
+// Edit mode: a small bar on every page with the switch that turns the Certificates menu on or off.
+if (isEditMode) {
+  const editBar = document.createElement("div");
+  editBar.className = "edit-bar";
+  editBar.innerHTML = `
+    <strong>Edit mode</strong>
+    <label class="cert-visibility">
+      <input type="checkbox" disabled />
+      <span class="switch" aria-hidden="true"></span>
+      <span class="cert-visibility-text">Certificates menu: loading…</span>
+    </label>`;
+  document.body.append(editBar);
+
+  const toggle = editBar.querySelector("input");
+  const text = editBar.querySelector(".cert-visibility-text");
+
+  const showVisibility = (visible) => {
+    toggle.checked = visible;
+    text.textContent = `Certificates menu: ${visible ? "on" : "off"}`;
+    showCertificatesMenu(visible);
+  };
+
+  settingsLoaded.then((settings) => {
+    showVisibility(settings.showCertificates === true);
+    toggle.disabled = false;
+  });
+
+  toggle.addEventListener("change", async () => {
+    const visible = toggle.checked;
+    toggle.disabled = true;
+    try {
+      const data = await sendToServer(SETTINGS_API, "POST", { showCertificates: visible });
+      showVisibility(data ? data.showCertificates : !visible);
+    } catch (error) {
+      showVisibility(!visible);
+      alert(`Save failed: ${error.message}`);
+    } finally {
+      toggle.disabled = false;
+    }
+  });
+}
+
 // Job title: every element with data-field="title" shows the same saved text.
 const titleFields = document.querySelectorAll('[data-field="title"]');
 
@@ -353,40 +395,6 @@ if (certGrid) {
 
   if (isEditMode) {
     certUpload.hidden = false;
-
-    // Switch that shows or hides the Certificates menu for visitors.
-    const certVisibility = document.getElementById("certVisibility");
-    const certVisibilityToggle = document.getElementById("certVisibilityToggle");
-    const certVisibilityText = document.getElementById("certVisibilityText");
-
-    const showVisibility = (visible) => {
-      certVisibilityToggle.checked = visible;
-      certVisibilityText.textContent = visible
-        ? "Certificates menu is visible to visitors"
-        : "Certificates menu is hidden from visitors";
-      showCertificatesMenu(visible);
-    };
-
-    certVisibility.hidden = false;
-    certVisibilityToggle.disabled = true;
-    settingsLoaded.then((settings) => {
-      showVisibility(settings.showCertificates === true);
-      certVisibilityToggle.disabled = false;
-    });
-
-    certVisibilityToggle.addEventListener("change", async () => {
-      const visible = certVisibilityToggle.checked;
-      certVisibilityToggle.disabled = true;
-      try {
-        const data = await sendToServer(SETTINGS_API, "POST", { showCertificates: visible });
-        showVisibility(data ? data.showCertificates : !visible);
-      } catch (error) {
-        showVisibility(!visible);
-        alert(`Save failed: ${error.message}`);
-      } finally {
-        certVisibilityToggle.disabled = false;
-      }
-    });
 
     certFile.addEventListener("change", () => {
       certFileName.textContent = certFile.files[0]?.name || "Choose image";
